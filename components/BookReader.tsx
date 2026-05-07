@@ -45,8 +45,18 @@ export default function BookReader() {
   const touchDirRef = useRef<"h" | "v" | null>(null);
   const initialDragRef = useRef(0);
 
-  // Safari Smart Hint State
-  const [showSafariHint, setShowSafariHint] = useState(false);
+  // Safari fullscreen hint (auto-dismiss after a few seconds)
+  const [showFullscreenHint, setShowFullscreenHint] = useState(false);
+  useEffect(() => {
+    if (!isMobile) return;
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
+                         (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
+    if (isStandalone) return;
+    // Defer to avoid synchronous setState in effect body
+    const show = setTimeout(() => setShowFullscreenHint(true), 0);
+    const hide = setTimeout(() => setShowFullscreenHint(false), 4000);
+    return () => { clearTimeout(show); clearTimeout(hide); };
+  }, [isMobile]);
 
   // Build character cache for text reveal animations
   useEffect(() => {
@@ -178,7 +188,6 @@ export default function BookReader() {
   // ── MOBILE: Touch handlers ──
   const onTouchStart = useCallback((e: TouchEvent) => {
     cancelAnimationFrame(snapAnimRef.current);
-    // Bỏ e.preventDefault() ở đây để cho phép cuộn dọc tự nhiên (giấu thanh URL)
     const touch = e.touches[0];
     touchStartRef.current = { x: touch.clientX, y: touch.clientY, time: Date.now() };
     isDraggingRef.current = true;
@@ -199,10 +208,7 @@ export default function BookReader() {
       touchDirRef.current = Math.abs(dx) > Math.abs(dy) ? "h" : "v";
     }
 
-    // Nếu là vuốt dọc, để trình duyệt tự cuộn tự nhiên (ẩn/hiện Safari UI)
-    if (touchDirRef.current !== "h") return; 
-    
-    // Chỉ khoá cuộn nếu đang vuốt ngang (lật sách)
+    if (touchDirRef.current !== "h") return;
     if (e.cancelable) e.preventDefault();
 
     const sw = window.innerWidth;
@@ -267,33 +273,15 @@ export default function BookReader() {
     }
   }, [animateSnap]);
 
-  // ── MOBILE DETECTION & SCROLL HINT ──
+  // ── MOBILE DETECTION ──
   useEffect(() => {
-    const handleScrollOrResize = () => {
-      // iPhone Pro Max landscape can be > 900px, so we use 1024px to cover all phones
+    const check = () => {
       const mobile = window.matchMedia("(max-width: 1024px)").matches && "ontouchstart" in window;
       setIsMobile(mobile);
-      
-      const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
-                           (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
-      
-      // Hiện gợi ý nếu ở Mobile browser bình thường và người dùng chưa cuộn xuống
-      if (mobile && !isStandalone) {
-        const isLandscape = window.innerWidth > window.innerHeight;
-        setShowSafariHint(isLandscape && window.scrollY < 10);
-      } else {
-        setShowSafariHint(false);
-      }
     };
-
-    handleScrollOrResize();
-    window.addEventListener("resize", handleScrollOrResize);
-    window.addEventListener("scroll", handleScrollOrResize, { passive: true });
-    
-    return () => {
-      window.removeEventListener("resize", handleScrollOrResize);
-      window.removeEventListener("scroll", handleScrollOrResize);
-    };
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
   }, []);
 
   // ── DESKTOP: Scroll listeners ──
@@ -352,12 +340,11 @@ export default function BookReader() {
         </div>
       </div>
 
-      <div className={`safari-smart-hint ${showSafariHint ? 'visible' : 'hidden'}`}>
-        <div className="safari-smart-hint-content">
-          <span className="bounce-arrow">↑</span>
-          <p>Vuốt nhẹ lên để xem Full màn hình ✨</p>
+      {showFullscreenHint && (
+        <div className="safari-fullscreen-hint">
+          ↑ Vuốt nhẹ lên để xem Full màn hình ✨
         </div>
-      </div>
+      )}
 
       <div className="book-scroll-wrapper">
         <div className="book-scroll-spacer" style={{ height: `${(TOTAL_LEAVES + 1) * 100}vh` }} />

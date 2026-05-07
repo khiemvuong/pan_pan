@@ -22,6 +22,7 @@
   align-items: center;
   justify-content: center;
   -webkit-tap-highlight-color: transparent;
+  touch-action: none;
 }
 
 /* ── 3D SCENE: The Book Itself ── */
@@ -585,62 +586,41 @@
      so there's no jank when user rotates to landscape */
 }
 
-/* Mobile swipe mode: allow vertical scroll to hide Safari UI */
+/* Mobile swipe mode: spacer makes page scrollable so Safari hides its URL bar */
 .mobile-swipe-mode .book-scroll-spacer {
   display: block;
-  height: 150vh !important;
-}
-.mobile-swipe-mode .book-viewport {
-  touch-action: pan-y;
+  height: 200vh !important;
+  pointer-events: none;
 }
 .mobile-swipe-mode .book-scroll-hint {
   bottom: clamp(0.5rem, 2vw, 1rem);
 }
 
-/* ── SAFARI SMART HINT ── */
-.safari-smart-hint {
+/* ── SAFARI FULLSCREEN HINT ── */
+.safari-fullscreen-hint {
   position: fixed;
-  top: 15%;
+  top: 12%;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(10px);
-  padding: 12px 24px;
-  border-radius: 30px;
-  box-shadow: 0 4px 20px rgba(209, 77, 114, 0.15);
-  z-index: 9999;
-  pointer-events: none;
-  transition: opacity 0.5s ease, transform 0.5s ease;
-}
-
-.safari-smart-hint.hidden {
-  opacity: 0;
-  transform: translate(-50%, -20px);
-}
-
-.safari-smart-hint.visible {
-  opacity: 1;
-  transform: translate(-50%, 0);
-}
-
-.safari-smart-hint-content {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  -webkit-backdrop-filter: blur(10px);
   color: #d14d72;
   font-family: var(--font-quicksand);
   font-weight: 700;
-  font-size: 1rem;
-  letter-spacing: 0.05em;
+  font-size: 0.95rem;
+  padding: 10px 22px;
+  border-radius: 30px;
+  box-shadow: 0 4px 18px rgba(209, 77, 114, 0.15);
+  z-index: 9999;
+  pointer-events: none;
+  white-space: nowrap;
+  animation: hintFadeInOut 4s ease forwards;
 }
 
-.safari-smart-hint .bounce-arrow {
-  font-size: 1.4rem;
-  animation: bounceHint 1.5s infinite;
+@keyframes hintFadeInOut {
+  0%   { opacity: 0; transform: translate(-50%, -10px); }
+  10%  { opacity: 1; transform: translate(-50%, 0); }
+  75%  { opacity: 1; transform: translate(-50%, 0); }
+  100% { opacity: 0; transform: translate(-50%, -10px); }
 }
-
-@keyframes bounceHint {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
-}
-
