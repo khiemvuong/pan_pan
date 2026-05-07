@@ -43,6 +43,7 @@ export default function BookReader() {
   const isDraggingRef = useRef(false);
   const snapAnimRef = useRef(0);
   const touchDirRef = useRef<"h" | "v" | null>(null);
+  const initialDragRef = useRef(0);
 
   // Build character cache for text reveal animations
   useEffect(() => {
@@ -85,13 +86,16 @@ export default function BookReader() {
         const scaleX = 1 - midFactor * 0.05;
         leaf.style.transform = `rotateY(${deg}deg) skewY(${curl}deg) scaleX(${scaleX})`;
 
-        // Dynamic shadow
-        const sOff = midFactor * 20;
-        const sBlur = midFactor * 30;
-        const sAlpha = midFactor * 0.3;
-        leaf.style.boxShadow = p > 0 && p < 1
-          ? `${p < 0.5 ? -sOff : sOff}px ${sOff / 2}px ${sBlur}px rgba(0,0,0,${sAlpha})`
-          : "none";
+        // Tối ưu Safari: Chỉ tính toán và render bóng đổ khi trang đang thực sự di chuyển
+        const isAnimating = p > 0 && p < 1;
+        if (isAnimating) {
+          const sOff = midFactor * 20;
+          const sBlur = midFactor * 30;
+          const sAlpha = midFactor * 0.3;
+          leaf.style.boxShadow = `${p < 0.5 ? -sOff : sOff}px ${sOff / 2}px ${sBlur}px rgba(0,0,0,${sAlpha})`;
+        } else {
+          leaf.style.boxShadow = "none";
+        }
 
         leaf.style.setProperty("--flip-progress", String(midFactor));
 
@@ -114,9 +118,15 @@ export default function BookReader() {
           const count = reveal * (chars.length + 3);
           for (let c = 0; c < chars.length; c++) {
             const o = Math.max(0, Math.min(1, count - c));
-            chars[c].style.opacity = String(o);
-            chars[c].style.transform = o >= 1 ? "translateY(0)" : `translateY(${-(1 - o) * 12}px)`;
-            chars[c].style.filter = o >= 1 ? "blur(0px)" : `blur(${(1 - o) * 2}px)`;
+            const el = chars[c];
+            // Tối ưu Safari: Tránh update DOM liên tục cho các ký tự đã hiển thị xong hoặc chưa hiển thị
+            const currentState = o >= 1 ? "1" : (o <= 0 ? "0" : "anim");
+            if (el.dataset.state !== currentState || currentState === "anim") {
+              el.style.opacity = String(o);
+              el.style.transform = o >= 1 ? "translateY(0)" : `translateY(${-(1 - o) * 12}px)`;
+              el.style.filter = (o >= 1 || o <= 0) ? "none" : `blur(${(1 - o) * 2}px)`;
+              el.dataset.state = currentState;
+            }
           }
         }
       }
@@ -134,12 +144,19 @@ export default function BookReader() {
     const startScroll = (currentPageRef.current + dragRef.current) * vh;
     const endScroll = targetPage * vh;
     const startTime = performance.now();
-    const duration = 400;
+    
+    // Tốc độ lật tỷ lệ thuận với quãng đường còn lại, tránh bị chậm khi chỉ còn 1 chút
+    const distanceFrac = Math.abs((endScroll - startScroll) / vh);
+    const duration = Math.max(150, 400 * distanceFrac);
 
     function tick(now: number) {
       const t = Math.min(1, (now - startTime) / duration);
       const eased = 1 - Math.pow(1 - t, 3);
       const current = startScroll + (endScroll - startScroll) * eased;
+      
+      // Update dragRef constantly so it can be cleanly interrupted
+      dragRef.current = (current / vh) - currentPageRef.current;
+      
       applyFlipState(current);
 
       if (t < 1) {
@@ -163,7 +180,7 @@ export default function BookReader() {
     touchStartRef.current = { x: touch.clientX, y: touch.clientY, time: Date.now() };
     isDraggingRef.current = true;
     touchDirRef.current = null;
-    dragRef.current = 0;
+    initialDragRef.current = dragRef.current; // Save interrupted progress
   }, []);
 
   const onTouchMove = useCallback((e: TouchEvent) => {
@@ -183,8 +200,22 @@ export default function BookReader() {
     if (e.cancelable) e.preventDefault();
 
     const sw = window.innerWidth;
-    const rawProgress = -dx / (sw * 0.35); // swipe left → positive → flip forward
-    const page = currentPageRef.current;
+    // Add initial drag to handle interrupted animations seamlessly
+    let rawProgress = initialDragRef.current + (-dx / (sw * 0.35)); 
+    let page = currentPageRef.current;
+
+    // Tràn trang: cho phép vuốt liền mạch qua nhiều trang mà không cần nhấc tay
+    if (rawProgress >= 1 && page < TOTAL_LEAVES) {
+      currentPageRef.current += 1;
+      initialDragRef.current -= 1;
+      rawProgress -= 1;
+      page = currentPageRef.current;
+    } else if (rawProgress <= -1 && page > 0) {
+      currentPageRef.current -= 1;
+      initialDragRef.current += 1;
+      rawProgress += 1;
+      page = currentPageRef.current;
+    }
 
     let clamped: number;
     if (rawProgress > 0) {
@@ -204,20 +235,29 @@ export default function BookReader() {
 
     const drag = dragRef.current;
     const page = currentPageRef.current;
-    const threshold = 0.15; // Lower threshold — easier to flip
 
-    // Flick detection based on pixel distance + time
     const elapsed = Date.now() - touchStartRef.current.time;
     const touch = e.changedTouches[0];
-    const pxDistance = Math.abs(touch.clientX - touchStartRef.current.x);
-    const isFlick = elapsed < 300 && pxDistance > 30; // Fast swipe > 30px
+    const dx = touch.clientX - touchStartRef.current.x;
+    
+    // -dx is positive when swiping left (forward)
+    const isFlickForward = elapsed < 300 && -dx > 30;
+    const isFlickBackward = elapsed < 300 && dx > 30;
 
-    if ((drag > threshold || (isFlick && drag > 0)) && page < TOTAL_LEAVES) {
-      animateSnap(page + 1);
-    } else if ((drag < -threshold || (isFlick && drag < 0)) && page > 0) {
-      animateSnap(page - 1);
+    if (drag > 0) {
+      if ((drag > 0.15 || isFlickForward) && !isFlickBackward && page < TOTAL_LEAVES) {
+        animateSnap(page + 1);
+      } else {
+        animateSnap(page);
+      }
+    } else if (drag < 0) {
+      if ((drag < -0.15 || isFlickBackward) && !isFlickForward && page > 0) {
+        animateSnap(page - 1);
+      } else {
+        animateSnap(page);
+      }
     } else {
-      animateSnap(page); // snap back
+      animateSnap(page);
     }
   }, [animateSnap]);
 
