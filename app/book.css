@@ -586,9 +586,10 @@
      so there's no jank when user rotates to landscape */
 }
 
-/* Mobile swipe mode: no scroll spacer needed */
+/* Mobile swipe mode: allow vertical scroll to hide Safari UI */
 .mobile-swipe-mode .book-scroll-spacer {
-  display: none;
+  display: block;
+  height: 150vh !important;
 }
 .mobile-swipe-mode .book-viewport {
   touch-action: none;
@@ -597,97 +598,50 @@
   bottom: clamp(0.5rem, 2vw, 1rem);
 }
 
-/* ── SAFARI INTRO SCREEN ── */
-.safari-intro-container {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 200vh; /* Tạo độ dài để cuộn giấu thanh URL */
-  background: #fdfbf7;
-  background-image: 
-    radial-gradient(circle at 100% 100%, rgba(255, 158, 196, 0.08) 0%, transparent 60%),
-    linear-gradient(135deg, #fdfbf7 0%, #f4eee6 100%);
-  z-index: 10000;
-}
-
-.safari-intro-fixed {
+/* ── SAFARI SMART HINT ── */
+.safari-smart-hint {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none; /* Xuyên qua để cuộn nền */
-}
-
-.safari-intro-content {
-  pointer-events: auto;
-  text-align: center;
-  padding: 2rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-}
-
-.safari-intro-bounce {
-  font-size: 2.5rem;
-  color: #d14d72;
-  animation: bounceUp 1.5s infinite;
-  margin-bottom: 0.5rem;
-}
-
-@keyframes bounceUp {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-15px); }
-}
-
-.safari-intro-title {
-  font-family: var(--font-serif);
-  color: #d14d72;
-  font-size: clamp(1.5rem, 4vw, 2rem);
-  margin: 0;
-}
-
-.safari-intro-desc {
-  font-family: var(--font-quicksand);
-  color: #a45a6c;
-  font-size: clamp(0.9rem, 2vw, 1.1rem);
-  opacity: 0.8;
-  max-width: 90%;
-  line-height: 1.5;
-}
-
-.safari-intro-btn {
-  margin-top: 1.5rem;
-  padding: 12px 30px;
-  background: #d14d72;
-  color: white;
-  border: none;
+  top: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  padding: 12px 24px;
   border-radius: 30px;
-  font-family: var(--font-sans);
-  font-weight: 600;
-  font-size: 1rem;
-  cursor: pointer;
-  box-shadow: 0 4px 15px rgba(209, 77, 114, 0.3);
-  transition: transform 0.2s, background 0.2s;
-  pointer-events: auto;
+  box-shadow: 0 4px 20px rgba(209, 77, 114, 0.15);
+  z-index: 9999;
+  pointer-events: none;
+  transition: opacity 0.5s ease, transform 0.5s ease;
 }
 
-.safari-intro-btn:active {
-  transform: scale(0.95);
-  background: #a45a6c;
+.safari-smart-hint.hidden {
+  opacity: 0;
+  transform: translate(-50%, -20px);
 }
 
-.safari-intro-pwa {
-  margin-top: 1.5rem;
+.safari-smart-hint.visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.safari-smart-hint-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #d14d72;
   font-family: var(--font-quicksand);
-  font-size: 0.85rem;
-  color: #a45a6c;
-  opacity: 0.7;
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.05em;
+}
+
+.safari-smart-hint .bounce-arrow {
+  font-size: 1.4rem;
+  animation: bounceHint 1.5s infinite;
+}
+
+@keyframes bounceHint {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
 }
 

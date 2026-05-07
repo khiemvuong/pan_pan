@@ -45,9 +45,8 @@ export default function BookReader() {
   const touchDirRef = useRef<"h" | "v" | null>(null);
   const initialDragRef = useRef(0);
 
-  // Safari Intro State
-  const [showIntro, setShowIntro] = useState(false);
-  const hasCheckedIntro = useRef(false);
+  // Safari Smart Hint State
+  const [showSafariHint, setShowSafariHint] = useState(false);
 
   // Build character cache for text reveal animations
   useEffect(() => {
@@ -179,7 +178,7 @@ export default function BookReader() {
   // ── MOBILE: Touch handlers ──
   const onTouchStart = useCallback((e: TouchEvent) => {
     cancelAnimationFrame(snapAnimRef.current);
-    e.preventDefault(); // Block scroll from starting
+    // Bỏ e.preventDefault() ở đây để cho phép cuộn dọc tự nhiên (giấu thanh URL)
     const touch = e.touches[0];
     touchStartRef.current = { x: touch.clientX, y: touch.clientY, time: Date.now() };
     isDraggingRef.current = true;
@@ -200,7 +199,10 @@ export default function BookReader() {
       touchDirRef.current = Math.abs(dx) > Math.abs(dy) ? "h" : "v";
     }
 
-    if (touchDirRef.current !== "h") return;
+    // Nếu là vuốt dọc, để trình duyệt tự cuộn tự nhiên (ẩn/hiện Safari UI)
+    if (touchDirRef.current !== "h") return; 
+    
+    // Chỉ khoá cuộn nếu đang vuốt ngang (lật sách)
     if (e.cancelable) e.preventDefault();
 
     const sw = window.innerWidth;
@@ -265,28 +267,32 @@ export default function BookReader() {
     }
   }, [animateSnap]);
 
-  // ── MOBILE DETECTION ──
+  // ── MOBILE DETECTION & SCROLL HINT ──
   useEffect(() => {
-    const check = () => {
+    const handleScrollOrResize = () => {
       // iPhone Pro Max landscape can be > 900px, so we use 1024px to cover all phones
       const mobile = window.matchMedia("(max-width: 1024px)").matches && "ontouchstart" in window;
       setIsMobile(mobile);
       
-      // Check PWA / standalone mode
-      if (!hasCheckedIntro.current) {
-        hasCheckedIntro.current = true;
-        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
-                             (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
-        
-        // Chỉ hiện màn hình mồi khi ở Mobile browser bình thường (không phải PWA)
-        if (mobile && !isStandalone) {
-          setShowIntro(true);
-        }
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                           (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
+      
+      // Hiện gợi ý nếu ở Mobile browser bình thường và người dùng chưa cuộn xuống
+      if (mobile && !isStandalone) {
+        setShowSafariHint(window.scrollY < 50);
+      } else {
+        setShowSafariHint(false);
       }
     };
-    check();
-    window.addEventListener("resize", check);
-    return () => window.removeEventListener("resize", check);
+
+    handleScrollOrResize();
+    window.addEventListener("resize", handleScrollOrResize);
+    window.addEventListener("scroll", handleScrollOrResize, { passive: true });
+    
+    return () => {
+      window.removeEventListener("resize", handleScrollOrResize);
+      window.removeEventListener("scroll", handleScrollOrResize);
+    };
   }, []);
 
   // ── DESKTOP: Scroll listeners ──
@@ -306,7 +312,7 @@ export default function BookReader() {
 
   // ── MOBILE: Touch listeners ──
   useEffect(() => {
-    if (!isMobile || showIntro) return; // Khoá lật trang khi màn hình intro còn hiện
+    if (!isMobile) return;
     const vp = viewportRef.current;
     if (!vp) return;
 
@@ -328,7 +334,7 @@ export default function BookReader() {
       vp.removeEventListener("touchmove", onTouchMove);
       vp.removeEventListener("touchend", onTouchEnd);
     };
-  }, [isMobile, showIntro, onTouchStart, onTouchMove, onTouchEnd, applyFlipState]);
+  }, [isMobile, onTouchStart, onTouchMove, onTouchEnd, applyFlipState]);
 
   // Preload images
   useEffect(() => {
@@ -345,31 +351,14 @@ export default function BookReader() {
         </div>
       </div>
 
-      {showIntro && (
-        <div className="safari-intro-container">
-          <div className="safari-intro-fixed">
-            <div className="safari-intro-content">
-              <div className="safari-intro-bounce">↑</div>
-              <h2 className="safari-intro-title">Vuốt lên để mở sách</h2>
-              <p className="safari-intro-desc">Hãy cuộn màn hình lên trên một chút để giấu thanh địa chỉ của trình duyệt nhé ✨</p>
-              
-              <button 
-                className="safari-intro-btn" 
-                onClick={() => {
-                  window.scrollTo(0, 0); // Đặt lại cuộn
-                  setShowIntro(false);
-                }}
-              >
-                Bắt đầu xem 🌸
-              </button>
-              
-              <p className="safari-intro-pwa">💡 Gợi ý: Chọn [Thêm vào MH chính] để xem full 100%</p>
-            </div>
-          </div>
+      <div className={`safari-smart-hint ${showSafariHint ? 'visible' : 'hidden'}`}>
+        <div className="safari-smart-hint-content">
+          <span className="bounce-arrow">↑</span>
+          <p>Vuốt nhẹ lên để xem Full màn hình ✨</p>
         </div>
-      )}
+      </div>
 
-      <div className="book-scroll-wrapper" style={{ display: showIntro ? 'none' : 'block' }}>
+      <div className="book-scroll-wrapper">
         <div className="book-scroll-spacer" style={{ height: `${(TOTAL_LEAVES + 1) * 100}vh` }} />
 
         <div ref={viewportRef} className="book-viewport">
