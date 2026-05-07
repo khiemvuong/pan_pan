@@ -7,10 +7,8 @@
 
 /* ── FIXED VIEWPORT ── */
 .book-viewport {
-  position: sticky;
-  top: 0;
-  width: 100%;
-  height: 100vh;
+  position: fixed;
+  inset: 0;
   z-index: 10;
   overflow: hidden;
   background: transparent;

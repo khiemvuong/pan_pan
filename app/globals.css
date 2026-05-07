@@ -194,5 +194,6 @@ h1, h2, h3 {
 
 /* ── MOBILE SWIPE MODE ── */
 .mobile-swipe-mode {
-  overflow: hidden !important; /* Lock body scroll in swipe mode */
+  overflow-x: hidden;  /* Block horizontal body scroll */
+  overflow-y: auto;    /* Allow vertical scroll so Safari can hide address bar */
 }

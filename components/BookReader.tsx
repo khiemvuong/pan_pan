@@ -359,6 +359,8 @@ export default function BookReader() {
       </div>
 
       <div className="book-scroll-wrapper">
+        <div className="book-scroll-spacer" style={{ height: `${(TOTAL_LEAVES + 1) * 100}vh` }} />
+
         <div ref={viewportRef} className="book-viewport">
           <div className="book-progress-bar"><div ref={barRef} className="book-progress-fill" /></div>
 
@@ -487,8 +489,6 @@ export default function BookReader() {
             <div className="book-scroll-hint-arrow">{isMobile ? "←  →" : "↓"}</div>
           </div>
         </div>
-
-        <div className="book-scroll-spacer" style={{ height: `${(TOTAL_LEAVES + 1) * 100}vh` }} />
       </div>
     </>
   );
