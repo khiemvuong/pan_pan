@@ -592,7 +592,7 @@
   height: 150vh !important;
 }
 .mobile-swipe-mode .book-viewport {
-  touch-action: none;
+  touch-action: pan-y;
 }
 .mobile-swipe-mode .book-scroll-hint {
   bottom: clamp(0.5rem, 2vw, 1rem);
