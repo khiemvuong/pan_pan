@@ -45,6 +45,10 @@ export default function BookReader() {
   const touchDirRef = useRef<"h" | "v" | null>(null);
   const initialDragRef = useRef(0);
 
+  // Safari Intro State
+  const [showIntro, setShowIntro] = useState(false);
+  const hasCheckedIntro = useRef(false);
+
   // Build character cache for text reveal animations
   useEffect(() => {
     charCache.current = Array.from({ length: TOTAL_LEAVES }).map((_, i) => {
@@ -264,8 +268,21 @@ export default function BookReader() {
   // ── MOBILE DETECTION ──
   useEffect(() => {
     const check = () => {
-      const mobile = window.matchMedia("(max-width: 900px)").matches && "ontouchstart" in window;
+      // iPhone Pro Max landscape can be > 900px, so we use 1024px to cover all phones
+      const mobile = window.matchMedia("(max-width: 1024px)").matches && "ontouchstart" in window;
       setIsMobile(mobile);
+      
+      // Check PWA / standalone mode
+      if (!hasCheckedIntro.current) {
+        hasCheckedIntro.current = true;
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                             (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
+        
+        // Chỉ hiện màn hình mồi khi ở Mobile browser bình thường (không phải PWA)
+        if (mobile && !isStandalone) {
+          setShowIntro(true);
+        }
+      }
     };
     check();
     window.addEventListener("resize", check);
@@ -289,7 +306,7 @@ export default function BookReader() {
 
   // ── MOBILE: Touch listeners ──
   useEffect(() => {
-    if (!isMobile) return;
+    if (!isMobile || showIntro) return; // Khoá lật trang khi màn hình intro còn hiện
     const vp = viewportRef.current;
     if (!vp) return;
 
@@ -311,7 +328,7 @@ export default function BookReader() {
       vp.removeEventListener("touchmove", onTouchMove);
       vp.removeEventListener("touchend", onTouchEnd);
     };
-  }, [isMobile, onTouchStart, onTouchMove, onTouchEnd, applyFlipState]);
+  }, [isMobile, showIntro, onTouchStart, onTouchMove, onTouchEnd, applyFlipState]);
 
   // Preload images
   useEffect(() => {
@@ -328,7 +345,31 @@ export default function BookReader() {
         </div>
       </div>
 
-      <div className="book-scroll-wrapper">
+      {showIntro && (
+        <div className="safari-intro-container">
+          <div className="safari-intro-fixed">
+            <div className="safari-intro-content">
+              <div className="safari-intro-bounce">↑</div>
+              <h2 className="safari-intro-title">Vuốt lên để mở sách</h2>
+              <p className="safari-intro-desc">Hãy cuộn màn hình lên trên một chút để giấu thanh địa chỉ của trình duyệt nhé ✨</p>
+              
+              <button 
+                className="safari-intro-btn" 
+                onClick={() => {
+                  window.scrollTo(0, 0); // Đặt lại cuộn
+                  setShowIntro(false);
+                }}
+              >
+                Bắt đầu xem 🌸
+              </button>
+              
+              <p className="safari-intro-pwa">💡 Gợi ý: Chọn [Thêm vào MH chính] để xem full 100%</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="book-scroll-wrapper" style={{ display: showIntro ? 'none' : 'block' }}>
         <div className="book-scroll-spacer" style={{ height: `${(TOTAL_LEAVES + 1) * 100}vh` }} />
 
         <div ref={viewportRef} className="book-viewport">
