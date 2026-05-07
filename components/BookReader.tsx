@@ -45,17 +45,28 @@ export default function BookReader() {
   const touchDirRef = useRef<"h" | "v" | null>(null);
   const initialDragRef = useRef(0);
 
-  // Safari fullscreen hint (auto-dismiss after a few seconds)
+  // Safari fullscreen hint (auto-dismiss after a few seconds, landscape only)
   const [showFullscreenHint, setShowFullscreenHint] = useState(false);
+  const hintShownRef = useRef(false);
   useEffect(() => {
     if (!isMobile) return;
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
                          (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
     if (isStandalone) return;
-    // Defer to avoid synchronous setState in effect body
-    const show = setTimeout(() => setShowFullscreenHint(true), 0);
-    const hide = setTimeout(() => setShowFullscreenHint(false), 4000);
-    return () => { clearTimeout(show); clearTimeout(hide); };
+
+    let hideTimer: ReturnType<typeof setTimeout>;
+    const onOrientationChange = () => {
+      const isLandscape = window.innerWidth > window.innerHeight;
+      if (isLandscape && !hintShownRef.current) {
+        hintShownRef.current = true;
+        setShowFullscreenHint(true);
+        hideTimer = setTimeout(() => setShowFullscreenHint(false), 4000);
+      }
+    };
+    // Check right away + listen for rotation
+    const t = setTimeout(onOrientationChange, 0);
+    window.addEventListener("resize", onOrientationChange);
+    return () => { clearTimeout(t); clearTimeout(hideTimer); window.removeEventListener("resize", onOrientationChange); };
   }, [isMobile]);
 
   // Build character cache for text reveal animations

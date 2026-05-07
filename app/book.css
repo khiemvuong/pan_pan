@@ -22,7 +22,7 @@
   align-items: center;
   justify-content: center;
   -webkit-tap-highlight-color: transparent;
-  touch-action: none;
+  touch-action: pan-y; /* Allow vertical scroll (Safari URL bar), block horizontal (we handle it in JS) */
 }
 
 /* ── 3D SCENE: The Book Itself ── */
