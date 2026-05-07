@@ -13,7 +13,7 @@ export const bookPages: PageData[] = [
     imageAlt: "Chibi vẫy tay chào, cầm bảng tên",
     title: "Hé lô mình là Pan nè",
     text: "Một cô gái bình thường với những mơ ước không bình thường~",
-    imageOnRight: true,
+    imageOnRight: false,
   },
 
   // ── CHƯƠNG MỞ ĐẦU ──────────────────────────────────
@@ -31,7 +31,7 @@ export const bookPages: PageData[] = [
     imageAlt: "Chibi nằm ngủ trên đám mây bông, có trăng sao xung quanh",
     title: "Được ngủ một giấc thật dài...",
     text: "Không báo thức, không deadline ",
-    imageOnRight: true,
+    imageOnRight: false,
   },
 
   // ── ƯỚC MƠ 2: Ôm bầu trời ──────────────────────────
@@ -55,7 +55,7 @@ export const bookPages: PageData[] = [
     imageAlt: "Váy hoa nâu, túi da, tự tin sành điệu",
     title: "Đôi khi là cô thiếu nữ Sài Gòn xưa",
     text: "Chậm rãi và duyên dáng giữa phố xá ",
-    imageOnRight: true,
+    imageOnRight: false,
   },
   {
     imageSrc: "/images/page-5.jpeg",
@@ -69,7 +69,7 @@ export const bookPages: PageData[] = [
     imageAlt: "Tay đua ịn ịn",
     title: "Thậm chí là tay đua ịn ịn vèo vèo",
     text: "Không ai cản được tớ đâu nha ",
-    imageOnRight: true,
+    imageOnRight: false,
   },
 
   // ── NHỮNG KỶ NIỆM ────────────────────────────────────
@@ -85,7 +85,7 @@ export const bookPages: PageData[] = [
     imageAlt: "4 người mặc Hanbok, phụ kiện truyền thống",
     title: "Đi chụp hình cả ngày lun nha~",
     text: "Bé nào cũng xinh hết ối tròi oi ",
-    imageOnRight: true,
+    imageOnRight: false,
   },
   {
     imageSrc: "/images/page-6.jpeg",
@@ -99,7 +99,7 @@ export const bookPages: PageData[] = [
     imageAlt: "Tết, hoa đào, nhân vật áo hồng nổi bật",
     title: "Luôn có gia đình ở bên",
     text: "Nơi tớ luôn muốn trở về ",
-    imageOnRight: true,
+    imageOnRight: false,
   },
   // ── ƯỚC MƠ TỐT NGHIỆP ─────────────────────────
   {

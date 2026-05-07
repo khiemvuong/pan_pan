@@ -11,14 +11,18 @@
   inset: 0;
   z-index: 10;
   overflow: hidden;
-  background: transparent; /* Changed to transparent so body background image shows through */
+  background: transparent;
   user-select: none;
   -webkit-user-select: none;
-  perspective: 3000px; /* Perspective shared by the whole scene */
+  -webkit-perspective: 3000px;
+  perspective: 3000px;
+  -webkit-perspective-origin: 50% 50%;
   perspective-origin: 50% 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none; /* Prevent default touch behaviors in mobile swipe mode */
 }
 
 /* ── 3D SCENE: The Book Itself ── */
@@ -28,8 +32,8 @@
   max-width: 1200px;
   height: 80vh;
   max-height: 800px;
+  -webkit-transform-style: preserve-3d;
   transform-style: preserve-3d;
-  /* Shadow for the whole physical book */
   border-radius: 16px;
 }
 
@@ -42,7 +46,7 @@
   background-image: 
     radial-gradient(circle at 100% 100%, rgba(255, 158, 196, 0.08) 0%, transparent 60%),
     linear-gradient(135deg, #fdfbf7 0%, #f4eee6 100%);
-  overflow: hidden;
+  clip-path: inset(0); /* Safe alternative to overflow:hidden for 3D contexts */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -79,9 +83,10 @@
   width: 50%;
   height: 100%;
   transform-origin: left center;
+  -webkit-transform-style: preserve-3d;
   transform-style: preserve-3d;
   will-change: transform;
-  transition: filter 0.05s linear;
+  -webkit-transform: translateZ(0);
 }
 
 /* Paper curl shadow — appears while flipping */
@@ -128,23 +133,24 @@
 .book-right-front {
   position: absolute;
   inset: 0;
-  backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
   border-radius: 0 16px 16px 0;
+  -webkit-transform: translateZ(0);
 }
 .book-right-front .book-page-bg {
   border-radius: 0 16px 16px 0;
-  /* Shadow from the spine */
   box-shadow: inset 10px 0 20px rgba(0, 0, 0, 0.05);
 }
 
 .book-right-back {
   position: absolute;
   inset: 0;
-  backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  -webkit-transform: rotateY(180deg) translateZ(0);
   transform: rotateY(180deg);
-  border-radius: 16px 0 0 16px; /* Matches left panel when flipped */
+  border-radius: 16px 0 0 16px;
 }
 .book-right-back .book-page-bg {
   border-radius: 16px 0 0 16px;
@@ -186,16 +192,23 @@
 .book-cover-front {
   position: absolute;
   inset: 0;
-  backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
+  clip-path: inset(0 round 0 16px 16px 0);
   border-radius: 0 16px 16px 0;
   background: linear-gradient(135deg, #2a1635 0%, #150a1c 100%);
   border: 1px solid rgba(255, 158, 196, 0.2);
   border-left: none;
+}
+
+/* Only lift the cover in Z-space when it's used as a FRONT face,
+   not when it's used on .book-right-back (last page back cover) */
+.book-right-front.book-cover-front {
+  -webkit-transform: translateZ(1px);
+  transform: translateZ(1px);
 }
 
 .book-cover-bg {
@@ -209,11 +222,12 @@
 .book-cover-back {
   position: absolute;
   inset: 0;
-  backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  -webkit-transform: rotateY(180deg) translateZ(0);
   transform: rotateY(180deg);
   border-radius: 16px 0 0 16px;
-  background: #1e122a; /* Inside cover color */
+  background: #1e122a;
   box-shadow: inset -10px 0 30px rgba(0, 0, 0, 0.6);
 }
 
@@ -568,7 +582,17 @@
   .portrait-blocker {
     display: flex;
   }
-  .book-scroll-wrapper {
-    display: none;
-  }
+  /* Don't hide content — let it pre-render behind the blocker
+     so there's no jank when user rotates to landscape */
+}
+
+/* Mobile swipe mode: no scroll spacer needed */
+.mobile-swipe-mode .book-scroll-spacer {
+  display: none;
+}
+.mobile-swipe-mode .book-viewport {
+  touch-action: none;
+}
+.mobile-swipe-mode .book-scroll-hint {
+  bottom: clamp(0.5rem, 2vw, 1rem);
 }

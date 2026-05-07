@@ -7,22 +7,23 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 export default function SmoothScroll() {
   useEffect(() => {
-    // Initialize Lenis with settings optimized for scroll-snap
+    // Skip Lenis on mobile — touch swipe handles navigation there
+    const isMobile = window.matchMedia('(max-width: 900px)').matches && 'ontouchstart' in window;
+    if (isMobile) return;
+
     const lenis = new Lenis({
       autoRaf: false,
-      duration: 2.5, // Slower for a more relaxed reading experience
+      duration: 2.5,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
-      wheelMultiplier: 0.5, // Reduced wheel sensitivity to slow down scroll
+      wheelMultiplier: 0.5,
       touchMultiplier: 2,
       infinite: false,
-      syncTouch: false, // Better for scroll-snap
+      syncTouch: false,
     });
 
-    // Sync Lenis with GSAP ScrollTrigger
     lenis.on('scroll', ScrollTrigger.update);
 
-    // Custom animation frame loop
     function raf(time: number) {
       lenis.raf(time);
       requestAnimationFrame(raf);
@@ -30,7 +31,6 @@ export default function SmoothScroll() {
 
     requestAnimationFrame(raf);
 
-    // Cleanup
     return () => {
       lenis.destroy();
     };

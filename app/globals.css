@@ -45,6 +45,7 @@
 
 html {
   scroll-behavior: auto;
+  background: var(--bg-dark); /* Prevent white flash on mobile */
 }
 
 body {
@@ -53,6 +54,7 @@ body {
   font-family: var(--font-sans);
   overflow-x: hidden;
   overflow-y: auto;
+  min-height: 100vh; /* Ensure body covers full viewport */
 }
 
 /* Typography */
@@ -61,6 +63,7 @@ h1, h2, h3 {
 }
 
 /* ── PETALS CONTAINER ── */
+/* Static decorative petals — no animation for performance */
 .petals-container {
   position: fixed;
   top: 0;
@@ -74,67 +77,41 @@ h1, h2, h3 {
 
 .petals-container svg {
   position: absolute;
-  animation: fall linear infinite;
+  opacity: 0.35;
 }
 
-@keyframes fall {
-  0% {
-    transform: translateY(-10vh) rotate(0deg);
-    opacity: 0;
-  }
-  10% {
-    opacity: 0.6;
-  }
-  90% {
-    opacity: 0.6;
-  }
-  100% {
-    transform: translateY(110vh) rotate(360deg);
-    opacity: 0;
-  }
-}
+/* Distribute petals across screen — static positions */
+.petals-container svg:nth-child(1) { left: 10%; top: 15%; }
+.petals-container svg:nth-child(2) { left: 25%; top: 55%; }
+.petals-container svg:nth-child(3) { left: 40%; top: 8%; }
+.petals-container svg:nth-child(4) { left: 55%; top: 75%; }
+.petals-container svg:nth-child(5) { left: 70%; top: 30%; }
+.petals-container svg:nth-child(6) { left: 85%; top: 60%; }
+.petals-container svg:nth-child(7) { left: 15%; top: 85%; }
+.petals-container svg:nth-child(8) { left: 60%; top: 45%; }
 
 /* ── AMBIENT BACKGROUND ELEMENTS ── */
+/* Static glows and stars — no animation for performance */
 .ambient-container {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 1; /* Behind the petals and book */
+  z-index: 1;
   overflow: hidden;
 }
 
-.ambient-container svg, 
+.ambient-container svg,
 .ambient-container .ambient-glow {
   position: absolute;
 }
 
 .ambient-glow {
-  animation: float-glow 8s ease-in-out infinite alternate;
-}
-
-@keyframes float-glow {
-  0% { transform: translate(0, 0) scale(1); opacity: 0.1; }
-  100% { transform: translate(20px, -20px) scale(1.1); opacity: 0.2; }
+  opacity: 0.12;
 }
 
 .animate-pulse {
-  animation: pulse-star 3s ease-in-out infinite;
+  opacity: 0.4;
 }
-
-@keyframes pulse-star {
-  0%, 100% { opacity: 0.3; transform: scale(0.8); }
-  50% { opacity: 1; transform: scale(1.2); }
-}
-
-/* Distribute petals across screen */
-.petals-container svg:nth-child(1) { left: 10%; animation-duration: 15s; animation-delay: 0s; }
-.petals-container svg:nth-child(2) { left: 25%; animation-duration: 18s; animation-delay: 2s; }
-.petals-container svg:nth-child(3) { left: 40%; animation-duration: 20s; animation-delay: 4s; }
-.petals-container svg:nth-child(4) { left: 55%; animation-duration: 16s; animation-delay: 1s; }
-.petals-container svg:nth-child(5) { left: 70%; animation-duration: 19s; animation-delay: 3s; }
-.petals-container svg:nth-child(6) { left: 85%; animation-duration: 17s; animation-delay: 5s; }
-.petals-container svg:nth-child(7) { left: 15%; animation-duration: 21s; animation-delay: 6s; }
-.petals-container svg:nth-child(8) { left: 60%; animation-duration: 14s; animation-delay: 7s; }
 
 /* ── LOADING SCREEN ── */
 .loading-screen {
@@ -186,9 +163,9 @@ h1, h2, h3 {
   margin-top: 1rem;
 }
 
-/* ── CURSOR (Optional - can be removed if not used) ── */
+/* ── CURSOR (Optional) ── */
 .cursor, .cursor-ring {
-  display: none; /* Hidden by default */
+  display: none;
 }
 
 @media (min-width: 768px) {
@@ -213,4 +190,9 @@ h1, h2, h3 {
     z-index: 10000;
     mix-blend-mode: difference;
   }
+}
+
+/* ── MOBILE SWIPE MODE ── */
+.mobile-swipe-mode {
+  overflow: hidden !important; /* Lock body scroll in swipe mode */
 }
