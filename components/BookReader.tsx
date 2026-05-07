@@ -279,7 +279,8 @@ export default function BookReader() {
       
       // Hiện gợi ý nếu ở Mobile browser bình thường và người dùng chưa cuộn xuống
       if (mobile && !isStandalone) {
-        setShowSafariHint(window.scrollY < 50);
+        const isLandscape = window.innerWidth > window.innerHeight;
+        setShowSafariHint(isLandscape && window.scrollY < 10);
       } else {
         setShowSafariHint(false);
       }
