@@ -215,6 +215,8 @@
   border-radius: 16px 0 0 16px;
   border: 1px solid rgba(255, 158, 196, 0.15);
   border-right: none;
+  -webkit-transform: translateZ(-5px);
+  transform: translateZ(-5px);
 }
 
 /* Right half — back cover text, visible when all pages are flipped */
@@ -232,6 +234,8 @@
   border-radius: 0 16px 16px 0;
   border: 1px solid rgba(255, 158, 196, 0.15);
   border-left: none;
+  -webkit-transform: translateZ(-5px);
+  transform: translateZ(-5px);
 }
 
 /* ── SPINE ── */
