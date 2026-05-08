@@ -370,6 +370,42 @@ export default function BookReader() {
             <div className="book-base" />
             <div className="book-spine" />
 
+            {/* ── FRONT COVER TEXT (Left half — visible when book is closed) ── */}
+            <div className="book-left-text-panel">
+              <div className="book-cover-content">
+                <div className="book-cover-line" />
+                <div className="book-cover-title-wrap">
+                  <div className="book-cover-title-row">
+                    {"TRẠM DỪNG".split("").map((c, j) => <span key={j} className="book-cover-char">{c === " " ? "\u00A0" : c}</span>)}
+                  </div>
+                  <div className="book-cover-title-row">
+                    {"THANH XUÂN".split("").map((c, j) => <span key={j} className="book-cover-char accent">{c === " " ? "\u00A0" : c}</span>)}
+                  </div>
+                </div>
+                <div className="book-cover-line" />
+                <p className="book-cover-subtitle" style={{ fontSize: '0.85rem', padding: '0 5%' }}>Cuốn sách nhỏ gói gọn những năm tháng của Pan</p>
+              </div>
+            </div>
+
+            {/* ── BACK COVER TEXT (Right half — visible when all pages are flipped) ── */}
+            <div className="book-right-text-panel">
+              <div className="book-cover-content">
+                <div className="book-cover-line" />
+                <div className="book-cover-title-wrap">
+                  <div className="book-cover-title-row">
+                    {"HẸN GẶP".split("").map((c, j) => <span key={j} className="book-cover-char">{c === " " ? "\u00A0" : c}</span>)}
+                  </div>
+                  <div className="book-cover-title-row">
+                    {"LẠI NHA".split("").map((c, j) => <span key={j} className="book-cover-char accent">{c === " " ? "\u00A0" : c}</span>)}
+                  </div>
+                </div>
+                <div className="book-cover-line" />
+                <p className="book-cover-subtitle" style={{ fontSize: '0.85rem', padding: '0 10%', lineHeight: '1.5' }}>
+                  Cảm ơn cậu đã xem. Nhớ đến dự lễ tốt nghiệp của tớ nha~ 💌
+                </p>
+              </div>
+            </div>
+
             {/* All leaves */}
             {Array.from({ length: TOTAL_LEAVES }).map((_, i) => {
               const isCover = i === 0;
@@ -381,21 +417,15 @@ export default function BookReader() {
                   {/* ── FRONT FACE ── */}
                   <div className={`book-right-front ${isCover ? 'book-cover-front' : ''}`}>
                     {isCover ? (
-                      <div className="book-cover-bg-wrap">
-                        <div className="book-cover-bg" />
-                        <div className="book-cover-content">
-                          <div className="book-cover-line" />
-                          <div className="book-cover-title-wrap">
-                            <div className="book-cover-title-row">
-                              {"TRẠM DỪNG".split("").map((c, j) => <span key={j} className="book-cover-char">{c === " " ? "\u00A0" : c}</span>)}
-                            </div>
-                            <div className="book-cover-title-row">
-                              {"THANH XUÂN".split("").map((c, j) => <span key={j} className="book-cover-char accent">{c === " " ? "\u00A0" : c}</span>)}
-                            </div>
-                          </div>
-                          <div className="book-cover-line" />
-                          <p className="book-cover-subtitle" style={{ fontSize: '0.9rem', padding: '0 5%' }}>Cuốn sách nhỏ gói gọn những năm tháng của Pan</p>
-                        </div>
+                      <div className="book-cover-img-wrap">
+                        <Image
+                          src="/images/cover.jpeg"
+                          alt="Bìa sách - Pan"
+                          fill
+                          className="book-cover-img"
+                          sizes="(max-width: 1200px) 50vw, 600px"
+                          priority
+                        />
                       </div>
                     ) : (
                       <div className="book-page-bg">
@@ -455,25 +485,14 @@ export default function BookReader() {
                         )}
                       </div>
                     ) : (
-                      <div className="book-cover-bg-wrap" style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <div className="book-cover-bg" />
-                        <div className="book-cover-content">
-                          <div className="book-cover-line" />
-                          <div className="book-cover-title-wrap">
-                            <div className="book-cover-title-row">
-                              {"HẸN GẶP".split("").map((c, j) => <span key={j} className="book-cover-char">{c === " " ? "\u00A0" : c}</span>)}
-                            </div>
-                            <div className="book-cover-title-row">
-                              {"LẠI NHA".split("").map((c, j) => <span key={j} className="book-cover-char accent">{c === " " ? "\u00A0" : c}</span>)}
-                            </div>
-                          </div>
-                          <div className="book-cover-line" />
-                          <p className="book-cover-subtitle" style={{ fontSize: '0.9rem', marginBottom: '1rem', padding: '0 10%', lineHeight: '1.4' }}>
-                            Cảm ơn cậu đã xem. Nhớ đến dự lễ tốt nghiệp của tớ nha~ 💌
-                          </p>
-                          <div className="book-sticker sticker-tr" style={{ right: '15%', top: '15%', opacity: 0.6 }}><FlowerBlossom size={80} color="#ff69b4" /></div>
-                          <div className="book-sticker sticker-bl" style={{ left: '15%', bottom: '15%', opacity: 0.7 }}><CornerDecoration size={100} /></div>
-                        </div>
+                      <div className="book-cover-img-wrap book-cover-last">
+                        <Image
+                          src="/images/lastcover.jpeg"
+                          alt="Bìa sau - Tốt nghiệp"
+                          fill
+                          className="book-cover-img"
+                          sizes="(max-width: 1200px) 50vw, 600px"
+                        />
                       </div>
                     )}
                   </div>
